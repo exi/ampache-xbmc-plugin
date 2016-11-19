@@ -4,13 +4,14 @@ import socket
 import re
 import random,xbmcplugin,xbmcgui, datetime, time, urllib,urllib2
 import xml.etree.ElementTree as ET
+import xml.etree as etree
 import hashlib
 import xbmcaddon
 import ssl
 
 # Shared resources
 
-ampache = xbmcaddon.Addon("plugin.audio.ampache")
+ampache = xbmcaddon.Addon("plugin.audio.ampache.exi")
 
 ampache_dir = xbmc.translatePath( ampache.getAddonInfo('path') )
 BASE_RESOURCE_PATH = os.path.join( ampache_dir, 'resources' )
@@ -180,9 +181,7 @@ def getFilterFromUser():
             return(False)
     return(filter)
 
-def AMPACHECONNECT():
-    socket.setdefaulttimeout(3600)
-    nTime = int(time.time())
+def get_user_pwd_login_url(nTime):
     myTimeStamp = str(nTime)
     sdf = ampache.getSetting("password")
     hasher = hashlib.new('sha256')
@@ -194,6 +193,18 @@ def AMPACHECONNECT():
     myURL = ampache.getSetting("server") + '/server/xml.server.php?action=handshake&auth='
     myURL += myPassphrase + "&timestamp=" + myTimeStamp
     myURL += '&version=350001&user=' + ampache.getSetting("username")
+    return myURL
+
+def get_auth_key_login_url():
+    myURL = ampache.getSetting("server") + '/server/xml.server.php?action=handshake&auth='
+    myURL += ampache.getSetting("api_key")
+    myURL += '&version=350001'
+    return myURL
+
+def AMPACHECONNECT():
+    socket.setdefaulttimeout(3600)
+    nTime = int(time.time())
+    myURL = get_auth_key_login_url() if ampache.getSetting("use_api_key") else get_user_pwd_login_url(nTime)
     xbmc.log(myURL,xbmc.LOGNOTICE)
     req = urllib2.Request(myURL)
     ssl_certs_str = ampache.getSetting("disable_ssl_certs")
@@ -221,6 +232,7 @@ def ampache_http_request(action,add=None, filter=None, limit=5000, offset=0):
         response = urllib2.urlopen(req)
     contents = response.read()
     contents = contents.replace("\0", "")
+    xbmc.log(contents, xbmc.LOGNOTICE)
     tree=ET.fromstring(contents)
     response.close()
     if tree.findtext("error"):
