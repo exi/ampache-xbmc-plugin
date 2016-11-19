@@ -1,5 +1,7 @@
 ampache-xbmc-plugin
 
-	This is a plugin for XBMC/KODI providing basic connectivity to the Streaming Software Ampache.
+This is a plugin for XBMC/KODI providing basic connectivity to the Streaming Software Ampache.
 
-	If you want to use it, zip it up and add it to your XBMC/KODI via System->AddOns->Install from ZIP.
+If you want to use it, zip it up and add it to your XBMC/KODI via System->AddOns->Install from ZIP.
+
+This is a fork of a fork of the original version, adding support for ampache API keys.
